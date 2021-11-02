@@ -22,3 +22,11 @@ Returns
     {
         "Name": "Something-Cool"
     }
+
+## Nouns
+
+<https://greenopolis.com/list-of-nouns/>
+
+## Adjectives
+
+<https://greenopolis.com/adjectives-list/>
