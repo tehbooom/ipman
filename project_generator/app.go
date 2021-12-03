@@ -7,6 +7,7 @@ import (
 	"log"
 	"math/rand"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -25,6 +26,14 @@ func (a *App) Initialize(user, password, dbname string) {
 		log.Fatal(err)
 	}
 
+	a.initializeDB()
+
+	file, err := os.Create("name") // create file for previous name
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
 	a.Router = mux.NewRouter()
 
 	a.initializeRoutes()
@@ -32,10 +41,6 @@ func (a *App) Initialize(user, password, dbname string) {
 
 func (a *App) Run(addr string) {
 	log.Fatal(http.ListenAndServe(":8080", a.Router))
-}
-
-func respondWithError(w http.ResponseWriter, code int, message string) {
-	respondWithJSON(w, code, map[string]string{"error": message})
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
@@ -56,7 +61,7 @@ func (a *App) getName(w http.ResponseWriter, r *http.Request) {
 
 	// grab number of rows in column noun
 	var nNum int
-	nRows := a.DB.QueryRow("SELECT COUNT (DISTINCT nouns) FROM words")
+	nRows := a.DB.QueryRow("SELECT COUNT (DISTINCT noun) FROM words")
 	nRows.Scan(&nNum)
 	defer a.DB.Close()
 
@@ -78,13 +83,11 @@ func (a *App) getName(w http.ResponseWriter, r *http.Request) {
 	nWord.Scan(noun)
 	defer a.DB.Close()
 
-	// create a file to store the last known project name
-	// file, fileErr := os.Create("name")
-	// if fileErr != nil {
-	// 	fmt.Println(fileErr)
-	// 	return
-	// }
-	// fmt.Fprintf(file, "%v\n", projectName)
+	// TODO
+	// - Check if the file is empty if so then continue
+	// - If the file is not empty and the new projectName = the string in the file then run through getName
+	// - else continue
+	// fmt.Fprintf("name", "%v\n", projectName)
 
 	var projectName string = adjective + "-" + noun
 
