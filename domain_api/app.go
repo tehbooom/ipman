@@ -19,7 +19,8 @@ type App struct {
 }
 
 func (a *App) Initialize(user, password, dbname string) {
-	connectionString := fmt.Sprintf("user=%s password=%s dbname=%s slmode=disable", user, password, dbname)
+	connectionString := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable", user, password, dbname)
+
 	var err error
 	a.DB, err = sql.Open("postgres", connectionString)
 	if err != nil {
@@ -55,10 +56,11 @@ func (a *App) getDomain(w http.ResponseWriter, r *http.Request) {
 
 func (a *App) getOperation(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	operation := vars["operation"]
+	op := vars["operation"]
 
-	d := domain{Operation: operation}
-	if err := d.getOperation(a.DB); err != nil {
+	d := domain{Operation: op}
+	domains, err := d.getOperation(a.DB)
+	if err != nil {
 		switch err {
 		case sql.ErrNoRows:
 			respondWithError(w, http.StatusNotFound, "Operation not found")
@@ -68,7 +70,7 @@ func (a *App) getOperation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	respondWithJSON(w, http.StatusOK, d)
+	respondWithJSON(w, http.StatusOK, domains)
 }
 
 func (a *App) getDomains(w http.ResponseWriter, r *http.Request) {
