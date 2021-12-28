@@ -11,11 +11,16 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
 )
 
 type App struct {
 	Router *mux.Router
 	DB     *sql.DB
+}
+
+type name struct {
+	Name string `json:"Name"`
 }
 
 func (a *App) Initialize(user, password, dbname string) {
@@ -83,15 +88,26 @@ func (a *App) getName(w http.ResponseWriter, r *http.Request) {
 	nWord.Scan(noun)
 	defer a.DB.Close()
 
-	// TODO
-	// - Check if the file is empty if so then continue
-	// - If the file is not empty and the new projectName = the string in the file then run through getName
-	// - else continue
-	// fmt.Fprintf("name", "%v\n", projectName)
-
 	var projectName string = adjective + "-" + noun
 
-	respondWithJSON(w, http.StatusOK, projectName)
+	check, err := os.ReadFile("name")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	result := string(check) == projectName
+
+	if result == true {
+		respondWithJSON(w, http.StatusConflict, "Previous project name please run again")
+	} else {
+		file, err := os.Create("name")
+		if err != nil {
+			log.Fatal(err)
+		}
+		defer file.Close()
+		file.WriteString(projectName)
+		respondWithJSON(w, http.StatusOK, projectName)
+	}
 }
 
 func (a *App) initializeRoutes() {

@@ -2,31 +2,29 @@
 
 API  where you submit a GET request which responds with a random project name in the form of ADJECTIVE-NOUN
 
-## TO DO
+## Dockerfile
 
-- Create Database
+Build the docker file with `docker build -t words-db ./`
 
-  - Create Column for Adjectives
-  - Create Column for Nouns
+Then run the container with `docker run -d --name words-db -p 5432:5432 words-db`
 
-- Create Routes
-- IF PROJECTNAME == LAST GIVEN NAME DO NOT GIVE
+## Setting enviroment variables
 
-## Example
+set `DB_USERNAME`,  `DB_PASSWORD`, and `DB_NAME`
 
-Sending a GET request to
-`http://localhost/api/v1/project`
-
-Returns
-
-    {
-        "Name": "Something-Cool"
-    }
-
+```bash
+export DB_USERNAME=postgres
+export DB_PASSWORD=<password in docekrfile>
+export DB_NAME=words
+```
 ## Nouns
 
-<https://greenopolis.com/list-of-nouns/>
+List of 15,000 nouns
+
+[Nouns](https://greenopolis.com/list-of-nouns/)
 
 ## Adjectives
 
-<https://greenopolis.com/adjectives-list/>
+List of 15,000 adjectives
+
+[Adjectives](https://greenopolis.com/adjectives-list/)

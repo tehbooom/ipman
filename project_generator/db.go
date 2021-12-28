@@ -16,20 +16,16 @@ func (a *App) initializeDB() {
 	re := regexp.MustCompile(`<li>(.*?)</li>`)
 
 	// create table
-	const table = ` CREATE TABLE [IF NOT EXISTS] words (
+	const table = `CREATE TABLE IF NOT EXISTS words (
 		id serial PRIMARY KEY,
-		noun text
+		noun text,
 		adjective text
 	)`
-	a.DB.Exec(table)
 
+	a.DB.Exec(table)
 	// nouns
 
-	const nrow = `INSERT INTO words (
-	noun
-	)
-	VALUES $1
-	)`
+	const nrow = `INSERT INTO words (noun) VALUES ('$1')`
 
 	nresp, err := http.Get(nurl) // get contents of noun webpage
 	if err != nil {
@@ -48,11 +44,7 @@ func (a *App) initializeDB() {
 	defer a.DB.Close()
 
 	//adjectives
-	const arow = `INSERT INTO words (
-		adjective
-	)
-	VALUES $1
-	)`
+	const arow = `INSERT INTO words (adjective) VALUES ('$1')`
 
 	aresp, err := http.Get(aurl) // get contents of adjectives webpage
 	if err != nil {
