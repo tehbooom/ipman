@@ -24,7 +24,7 @@ type name struct {
 }
 
 func (a *App) Initialize(user, password, dbname string) {
-	dsn := fmt.Sprintf("user=%s password=%s dbname=%s, user password dbname")
+	dsn := fmt.Sprintf("user=%s password=%s dbname=%s", user, password, dbname)
 	var err error
 	a.DB, err = sql.Open("postgres", dsn)
 	if err != nil {
