@@ -19,16 +19,12 @@ type App struct {
 	DB     *sql.DB
 }
 
-type name struct {
-	Name string `json:"Name"`
-}
-
 func (a *App) Initialize(user, password, dbname string) {
-	dsn := fmt.Sprintf("user=%s password=%s dbname=%s", user, password, dbname)
+	dsn := fmt.Sprintf("host=localhost port=5432 sslmode=disable user=%s password=%s dbname=%s", user, password, dbname)
 	var err error
 	a.DB, err = sql.Open("postgres", dsn)
 	if err != nil {
-		log.Fatal(err)
+		log.Printf("Error connecting to db: %v\n", err)
 	}
 
 	a.initializeDB()
