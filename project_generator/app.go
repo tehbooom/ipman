@@ -5,10 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"math/rand"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
@@ -27,8 +25,6 @@ func (a *App) Initialize(user, password, dbname string) {
 		log.Printf("Error connecting to db: %v\n", err)
 	}
 
-	a.initializeDB()
-
 	file, err := os.Create("name") // create file for previous name
 	if err != nil {
 		log.Fatal(err)
@@ -45,65 +41,33 @@ func (a *App) Run(addr string) {
 }
 
 func respondWithJSON(w http.ResponseWriter, code int, payload interface{}) {
-	response, _ := json.Marshal(payload)
-
+	var err error
+	response, _ := json.MarshalIndent(payload, "", "    ")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	w.Write(response)
+	_, err = w.Write(response)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func respondWithError(w http.ResponseWriter, code int, message string) {
+	respondWithJSON(w, code, map[string]string{"error": message})
 }
 
 func (a *App) getName(w http.ResponseWriter, r *http.Request) {
 
-	// grab number of rows in column adjective
-	var aNum int
-	aRows := a.DB.QueryRow("SELECT COUNT (DISTINCT adjective) FROM words")
-	aRows.Scan(aNum)
-	defer a.DB.Close()
-
-	// grab number of rows in column noun
-	var nNum int
-	nRows := a.DB.QueryRow("SELECT COUNT (DISTINCT noun) FROM words")
-	nRows.Scan(&nNum)
-	defer a.DB.Close()
-
-	// setting vars for getting an almost random number
-	min := 1
-	rand.Seed(time.Now().UnixNano())
-
-	// select random noun
-	var adjective string
-	aRand := rand.Intn(aNum+min) + min
-	aWord := a.DB.QueryRow("SELECT $1 FROM noun", aRand)
-	aWord.Scan(adjective)
-	defer a.DB.Close()
-
-	// select random adjective
-	var noun string
-	nRand := rand.Intn(nNum+min) + min
-	nWord := a.DB.QueryRow("SELECT $1 FROM adjective", nRand)
-	nWord.Scan(noun)
-	defer a.DB.Close()
-
-	var projectName string = adjective + "-" + noun
-
-	check, err := os.ReadFile("name")
+	var err error
+	n := name{}
+	names, errGet := n.getWords(a.DB)
 	if err != nil {
-		log.Fatal(err)
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
+	} else if errGet != nil {
+		respondWithError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
-
-	result := string(check) == projectName
-
-	if result == true {
-		respondWithJSON(w, http.StatusConflict, "Previous project name please run again")
-	} else {
-		file, err := os.Create("name")
-		if err != nil {
-			log.Fatal(err)
-		}
-		defer file.Close()
-		file.WriteString(projectName)
-		respondWithJSON(w, http.StatusOK, projectName)
-	}
+	respondWithJSON(w, http.StatusOK, names)
 }
 
 func (a *App) initializeRoutes() {
