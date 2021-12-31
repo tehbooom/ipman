@@ -1,30 +1,85 @@
 # Project Name Generator
 
-API  where you submit a GET request which responds with a random project name in the form of ADJECTIVE-NOUN
+API where you submit a GET request which responds with a random project name in the form of ADJECTIVE-NOUN
+
+## Table of Contents
+
+- [Project Name Generator](#project-name-generator)
+  - [Dockerfile](#dockerfile)
+  - [Setting environment variables](#setting-environment-variables)
+  - [Setup](#setup)
+  - [Getting a new project name](#getting-a-new-project-name)
+    - [Request](#request)
+    - [Response](#response)
+  - [Nouns](#nouns)
+  - [Adjectives](#adjectives)
 
 ## Dockerfile
 
-Build the docker file with `docker build -t words-db ./`
+Build the database with the following 
 
-Then run the container with `docker run -d --name words-db -p 5432:5432 words-db`
+```bash
+docker build -t words-db docker/
+docker run -d --name words-db -p 5432:5432 words-db
+docker exec -i words-db /bin/bash -c "PGPASSWORD=<password in dockerfile> psql --username postgres words" < words.sql
+```
 
-## Setting enviroment variables
+## Setting environment variables
 
-set `DB_USERNAME`,  `DB_PASSWORD`, and `DB_NAME`
+Set the database username, password, and the database name as enviroment variables
 
 ```bash
 export DB_USERNAME=postgres
-export DB_PASSWORD=<password in docekrfile>
+export DB_PASSWORD=test
 export DB_NAME=words
 ```
+
+## Setup
+
+First compile the executable with
+
+```bash
+make build
+```
+
+This puts the binary in the `/bin` folder
+
+Then run
+
+```bash
+make run
+# or
+./bin/projectGen-main-linux
+```
+
+## Getting a new project name
+
+Make a GET request to port 8080 on the box which it is running
+
+### Request
+
+```bash
+curl -X GET <IP>:8080/project
+```
+
+### Response
+
+```json
+[
+    {
+        "name": "adjective-noun"
+    }
+]
+```
+
 ## Nouns
 
-List of 15,000 nouns
+List of [nouns](nouns.text) used
 
-[Nouns](https://greenopolis.com/list-of-nouns/)
+ This is where the[Nouns](https://greenopolis.com/list-of-nouns/) were pulled from
 
 ## Adjectives
 
-List of 15,000 adjectives
+List of [adjectives](adjectives.text) used
 
-[Adjectives](https://greenopolis.com/adjectives-list/)
+This is where the [Adjectives](https://greenopolis.com/adjectives-list/) were pulled from
