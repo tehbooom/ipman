@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 )
 
@@ -13,5 +12,4 @@ func main() {
 		os.Getenv("DB_NAME"))
 
 	a.Run(":8080")
-	fmt.Println("in there")
 }
